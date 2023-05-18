@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    /* CSS Styles Here */
+
+    body {
+      font-family: "Arial", sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(to bottom, #330066, #000000);
+      background-attachment: fixed;
+      color: #ffffff;
+      user-select: none;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: 36px;
+      margin-bottom: 20px;
+      color: #ffffff;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+    }
+
+    p {
+      color: #ffffff;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+    }
+
+    #start-button,
+    #score-button {
+      padding: 10px 20px;
+      font-size: 18px;
+      border: none;
+      background-color: #6600cc;
+      color: #ffffff;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      border-radius: 20px;
+      margin: 10px auto;
+      display: block;
+    }
+
+    #start-button:hover,
+    #score-button:hover {
+      background-color: #4c0099;
+    }
+
+    #score-button:disabled {
+      background-color: #999999;
+      cursor: not-allowed;
+    }
+
+    #score {
+      font-size: 48px;
+      margin: 20px 0;
+      color: #ffffff;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+    }
+
+    #clicks-per-second {
+      font-size: 24px;
+      color: #ffffff;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #000000;
+      padding: 20px;
+      border-radius: 10px;
+    }
+
+    .modal-button {
+      padding: 10px 20px;
+      font-size: 18px;
+      border: none;
+      background-color: #6600cc;
+      color: #ffffff;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      border-radius: 20px;
+    }
+
+    .modal-button:hover {
+      background-color: #4c0099;
+    }
+
+    ::selection {
+      background-color: transparent;
+      color: inherit;
+    }
+  </style>
+  <script>
+    var score = 0;
+    var timeLeft = 10;
+    var clickCount = 0;
+    var cpsInterval;
+    var cps = 0;
+    var gameStarted = false;
+
+    function startGame() {
+      if (gameStarted) {
+        return; // Exit if game is already started
+      }
+
+      gameStarted = true;
+      document.getElementById("start-button").disabled = true;
+      document.getElementById("score-button").disabled = false;
+      document.getElementById("time-left").innerHTML = timeLeft;
+      score = 0; // Reset score
+      clickCount = 0; // Reset click count
+      document.getElementById("score").innerHTML = score; // Reset score display
+
+      cpsInterval = setInterval(updateClicksPerSecond, 1000);
+
+      var countdown = setInterval(function() {
+        timeLeft--;
+        document.getElementById("time-left").innerHTML = timeLeft;
+
+        if (timeLeft <= 0) {
+          clearInterval(countdown);
+          clearInterval(cpsInterval);
+          document.getElementById("score-button").disabled = true;
+          showModal(score, calculateClicksPerSecond().toFixed(2));
+          timeLeft = 10;
+          document.getElementById("time-left").innerHTML = timeLeft;
+          document.getElementById("clicks-per-second").innerHTML = "0.00";
+          cps = 0;
+          gameStarted = false;
+          document.getElementById("start-button").disabled = false;
+        }
+      }, 1000);
+    }
+
+    function increaseScore() {
+      if (!gameStarted) {
+        return; // Exit if game is not started
+      }
+
+      score++;
+      clickCount++;
+      document.getElementById("score").innerHTML = score;
+      updateClicksPerSecond();
+    }
+
+    function updateClicksPerSecond() {
+      if (clickCount === 0 || timeLeft === 0) {
+        document.getElementById("clicks-per-second").innerHTML = "0.00";
+      } else {
+        cps = clickCount / (10 - timeLeft);
+        document.getElementById("clicks-per-second").innerHTML = cps.toFixed(2);
+      }
+    }
+
+    function calculateClicksPerSecond() {
+      return clickCount / 10;
+    }
+
+    function showModal(score, cps) {
+      var modal = document.getElementById("modal");
+      modal.style.display = "block";
+      var scoreDisplay = document.getElementById("modal-score");
+      scoreDisplay.innerHTML = score;
+      var cpsDisplay = document.getElementById("modal-cps");
+      cpsDisplay.innerHTML = cps;
+    }
+
+    function closeModal() {
+      var modal = document.getElementById("modal");
+      modal.style.display = "none";
+    }
+
+    document.addEventListener("contextmenu", function(e) {
+      e.preventDefault();
+    });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h1>Click the Button Game</h1>
+    <button id="start-button" onclick="startGame()">Start Game</button>
+    <p>Time Left: <span id="time-left">0</span></p>
+    <button id="score-button" onclick="increaseScore()">Click Me!</button>
+    <p>Score: <span id="score">0</span></p>
+    <p>Clicks per Second: <span id="clicks-per-second">0.00</span></p>
+  </div>
+
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <h2>Game Over!</h2>
+      <p>Your Score: <span id="modal-score"></span></p>
+      <p>Clicks per Second: <span id="modal-cps"></span></p>
+      <button class="modal-button" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</body>
+</html>
